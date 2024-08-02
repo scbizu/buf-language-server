@@ -20,6 +20,7 @@ import (
 	"github.com/bufbuild/buf-language-server/internal/bufls"
 	"github.com/bufbuild/buf-language-server/internal/bufls/cmd/bufls/command/definition"
 	"github.com/bufbuild/buf-language-server/internal/bufls/cmd/bufls/command/serve"
+	"github.com/bufbuild/buf-language-server/internal/bufls/cmd/bufls/command/symbol"
 	"github.com/bufbuild/buf/private/pkg/app/appcmd"
 	"github.com/bufbuild/buf/private/pkg/app/appflag"
 )
@@ -45,6 +46,7 @@ func NewRootCommand(name string) *appcmd.Command {
 		BindPersistentFlags: appcmd.BindMultiple(builder.BindRoot),
 		SubCommands: []*appcmd.Command{
 			definition.NewCommand("definition", builder),
+			symbol.NewCommand("symbol", builder),
 			serve.NewCommand("serve", builder),
 		},
 	}

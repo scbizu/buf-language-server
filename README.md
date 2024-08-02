@@ -1,10 +1,10 @@
 # Buf Language Server
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > **This repo is no longer under active development**.
-> 
+>
 > However, Buf is working on a  new language server implementation that will be integrated directly into the
-> [Buf CLI](https://github.com/bufbuild/buf). 
+> [Buf CLI](https://github.com/bufbuild/buf).
 >
 > For more information, see [this PR](https://github.com/bufbuild/buf/pull/2662).
 
@@ -48,6 +48,10 @@ augroup END
 
   [vim-lsp]: https://github.com/prabirshrestha/vim-lsp
 
+### VSCode
+
+You need to install the [Buf](https://marketplace.visualstudio.com/items?itemName=bufbuild.vscode-buf) extension from the marketplace. But, Currently, the `go to definition` and `symbols` features are not merged into the upstream since the `bufls` is not stable enough. You can install my releases in [scbizu/vscode-buf](https://github.com/scbizu/vscode-buf/releases) . (It is used by myself so I don't promise the compatibility in the future)
+
 ## Supported features
 
 Buf's language server behaves similarly to the rest of the `buf` CLI. If
@@ -83,6 +87,12 @@ but the cache would need to be cleared whenever a file is edited during the same
 language server session, which would require a file watcher. For now, performance
 is fine as-is (even for workspaces and large modules), but we might need to revisit
 this later as build graphs continue to grow.
+
+### Document symbols
+
+Document symbols feature resolves the LSP symbols for a given text document (i.e. [textDocument/documentSymbol]).
+
+SEE MORE AT [LSP DocumentSymbol SPEC](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
 
 ## Future work
 

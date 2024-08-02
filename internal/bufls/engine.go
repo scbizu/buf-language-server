@@ -33,6 +33,7 @@ import (
 	"github.com/bufbuild/protocompile/ast"
 	"github.com/bufbuild/protocompile/parser"
 	"github.com/bufbuild/protocompile/reporter"
+	"go.lsp.dev/protocol"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/reflect/protodesc"
@@ -67,6 +68,73 @@ func newEngine(
 		moduleFileSetBuilder: moduleFileSetBuilder,
 		imageBuilder:         imageBuilder,
 	}
+}
+
+func (e *engine) Symbols(ctx context.Context, filePath FilePath) (
+	[]protocol.DocumentSymbol,
+	error,
+) {
+	var retErr error
+	path := string(filePath)
+	moduleFileSet, image, err := e.buildForExternalPath(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	moduleFile, err := moduleFileForExternalPath(ctx, moduleFileSet, image, path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		retErr = multierr.Append(retErr, moduleFile.Close())
+	}()
+	fileNode, err := parser.Parse(
+		moduleFile.ExternalPath(),
+		moduleFile,
+		reporter.NewHandler(nil),
+	)
+	if err != nil {
+		return nil, err
+	}
+	var symbols []protocol.DocumentSymbol
+	for _, ele := range fileNode.Decls {
+		switch ele := ele.(type) {
+		case *ast.EnumNode:
+			symbol := protocol.DocumentSymbol{
+				Name: ele.Name.Val,
+				Kind: protocol.SymbolKindEnum,
+			}
+			symbols = append(symbols, symbol)
+		case *ast.MessageNode:
+			symbol := protocol.DocumentSymbol{
+				Name: ele.Name.Val,
+				Kind: protocol.SymbolKindObject,
+			}
+			symbols = append(symbols, symbol)
+		case *ast.ServiceNode:
+			symbol := protocol.DocumentSymbol{
+				Name: ele.Name.Val,
+				Kind: protocol.SymbolKindModule,
+			}
+			symbols = append(symbols, symbol)
+			for _, decl := range ele.Decls {
+				switch decl := decl.(type) {
+				case *ast.RPCNode:
+					symbol := protocol.DocumentSymbol{
+						Name: decl.Name.Val,
+						Kind: protocol.SymbolKindMethod,
+					}
+					symbols = append(symbols, symbol)
+				}
+			}
+		case *ast.PackageNode:
+			symbol := protocol.DocumentSymbol{
+				Name: ele.Name.Value().(string),
+				Kind: protocol.SymbolKindPackage,
+			}
+			symbols = append(symbols, symbol)
+		}
+	}
+	return symbols, nil
 }
 
 func (e *engine) Definition(ctx context.Context, location Location) (_ Location, retErr error) {

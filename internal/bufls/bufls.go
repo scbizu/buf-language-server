@@ -49,6 +49,7 @@ func NewHandler(logger *zap.Logger, engine Engine) Handler {
 // as well as the bufls sub-commands (e.g. 'bufls definition').
 type Engine interface {
 	Definition(context.Context, Location) (Location, error)
+	Symbols(context.Context, FilePath) ([]protocol.DocumentSymbol, error)
 }
 
 // NewEngine returns a new Protobuf language server engine.
@@ -79,6 +80,8 @@ type Location interface {
 	// Column is the column number of the location.
 	Column() int
 }
+
+type FilePath string
 
 // ParseLocation parses a <filename>:<line>:<column> into a Location.
 func ParseLocation(location string) (Location, error) {
