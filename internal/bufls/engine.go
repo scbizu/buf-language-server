@@ -106,11 +106,16 @@ func (e *engine) Symbols(ctx context.Context, filePath FilePath) (
 					Start: protocol.Position{
 						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
 					},
-					// We not need range end since it seems useless for code navigation ?
+					End: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).End().Line),
+					},
 				},
 				SelectionRange: protocol.Range{
 					Start: protocol.Position{
 						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+					End: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).End().Line),
 					},
 				},
 			}
@@ -118,15 +123,21 @@ func (e *engine) Symbols(ctx context.Context, filePath FilePath) (
 		case *ast.MessageNode:
 			symbol := protocol.DocumentSymbol{
 				Name: ele.Name.Val,
-				Kind: protocol.SymbolKindObject,
+				Kind: protocol.SymbolKindStruct,
 				Range: protocol.Range{
 					Start: protocol.Position{
 						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+					End: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).End().Line),
 					},
 				},
 				SelectionRange: protocol.Range{
 					Start: protocol.Position{
 						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+					End: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).End().Line),
 					},
 				},
 			}
@@ -134,15 +145,21 @@ func (e *engine) Symbols(ctx context.Context, filePath FilePath) (
 		case *ast.ServiceNode:
 			symbol := protocol.DocumentSymbol{
 				Name: ele.Name.Val,
-				Kind: protocol.SymbolKindModule,
+				Kind: protocol.SymbolKindClass,
 				Range: protocol.Range{
 					Start: protocol.Position{
 						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+					End: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).End().Line),
 					},
 				},
 				SelectionRange: protocol.Range{
 					Start: protocol.Position{
 						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+					End: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).End().Line),
 					},
 				},
 			}
@@ -157,10 +174,16 @@ func (e *engine) Symbols(ctx context.Context, filePath FilePath) (
 							Start: protocol.Position{
 								Line: uint32(fileNode.NodeInfo(decl).Start().Line),
 							},
+							End: protocol.Position{
+								Line: uint32(fileNode.NodeInfo(decl).End().Line),
+							},
 						},
 						SelectionRange: protocol.Range{
 							Start: protocol.Position{
 								Line: uint32(fileNode.NodeInfo(decl).Start().Line),
+							},
+							End: protocol.Position{
+								Line: uint32(fileNode.NodeInfo(decl).End().Line),
 							},
 						},
 					}
@@ -170,6 +193,8 @@ func (e *engine) Symbols(ctx context.Context, filePath FilePath) (
 			symbol.Children = childrenSymbols
 			symbols = append(symbols, symbol)
 		case *ast.PackageNode:
+			// TODO(scnace): Add support for package nodes.
+			// low priority to implement
 		}
 	}
 	return symbols, nil
