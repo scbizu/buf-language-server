@@ -17,7 +17,7 @@ package symbol
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"encoding/json"
 	"os"
 
 	"github.com/bufbuild/buf-language-server/internal/bufls"
@@ -59,13 +59,8 @@ func NewCommand(
 					return err
 				}
 				buf := bytes.NewBuffer(nil)
-				for _, sb := range sbs {
-					fmt.Fprintf(
-						buf,
-						"%s:%s\n",
-						sb.Name,
-						sb.Kind.String(),
-					)
+				if err:=json.NewEncoder(buf).Encode(sbs);err!=nil {
+					return err
 				}
 				if _, err := container.Stdout().Write(
 					buf.Bytes(),

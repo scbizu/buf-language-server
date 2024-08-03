@@ -102,36 +102,74 @@ func (e *engine) Symbols(ctx context.Context, filePath FilePath) (
 			symbol := protocol.DocumentSymbol{
 				Name: ele.Name.Val,
 				Kind: protocol.SymbolKindEnum,
+				Range: protocol.Range{
+					Start: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+					// We not need range end since it seems useless for code navigation ?
+				},
+				SelectionRange: protocol.Range{
+					Start: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+				},
 			}
 			symbols = append(symbols, symbol)
 		case *ast.MessageNode:
 			symbol := protocol.DocumentSymbol{
 				Name: ele.Name.Val,
 				Kind: protocol.SymbolKindObject,
+				Range: protocol.Range{
+					Start: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+				},
+				SelectionRange: protocol.Range{
+					Start: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+				},
 			}
 			symbols = append(symbols, symbol)
 		case *ast.ServiceNode:
 			symbol := protocol.DocumentSymbol{
 				Name: ele.Name.Val,
 				Kind: protocol.SymbolKindModule,
+				Range: protocol.Range{
+					Start: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+				},
+				SelectionRange: protocol.Range{
+					Start: protocol.Position{
+						Line: uint32(fileNode.NodeInfo(ele).Start().Line),
+					},
+				},
 			}
-			symbols = append(symbols, symbol)
+			var childrenSymbols []protocol.DocumentSymbol
 			for _, decl := range ele.Decls {
 				switch decl := decl.(type) {
 				case *ast.RPCNode:
 					symbol := protocol.DocumentSymbol{
 						Name: decl.Name.Val,
 						Kind: protocol.SymbolKindMethod,
+						Range: protocol.Range{
+							Start: protocol.Position{
+								Line: uint32(fileNode.NodeInfo(decl).Start().Line),
+							},
+						},
+						SelectionRange: protocol.Range{
+							Start: protocol.Position{
+								Line: uint32(fileNode.NodeInfo(decl).Start().Line),
+							},
+						},
 					}
-					symbols = append(symbols, symbol)
+					childrenSymbols = append(childrenSymbols, symbol)
 				}
 			}
-		case *ast.PackageNode:
-			symbol := protocol.DocumentSymbol{
-				Name: ele.Name.Value().(string),
-				Kind: protocol.SymbolKindPackage,
-			}
+			symbol.Children = childrenSymbols
 			symbols = append(symbols, symbol)
+		case *ast.PackageNode:
 		}
 	}
 	return symbols, nil
